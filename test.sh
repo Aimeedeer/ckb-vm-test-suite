@@ -59,6 +59,20 @@ autoconf
 ./configure
 make isa
 
+# Test Rust code with Miri
+# TODO: find the general command for both macOS and Linux
+# Remove `-E` to run on Linux
+for i in $(find -E . -regex ".*/rv32u[imc]-u-[a-z0-9_]" | grep -v "fence_i"); do
+    echo hello_miri_32
+    MIRIFLAGS="-Zmiri-disable-isolation" cargo +nightly-2021-02-27 miri run --manifest-path="../binary/Cargo.toml" --bin interpreter32 -- $i
+done
+
+for i in $(find -E . -regex ".*/rv64u[imc]-u-[a-z0-9_]+" | grep -v "fence_i"); do
+    echo hello_miri_64
+    MIRIFLAGS="-Zmiri-disable-isolation" cargo +nightly-2021-02-27 miri run --manifest-path="../binary/Cargo.toml" --bin interpreter64 -- $i
+done
+exit # TODO: remove this line afterward
+
 # Test CKB VM with riscv-tests
 # NOTE: let's stick with the simple way here since we know there won't be
 # whitespaces, otherwise shell might not be a good option here.
@@ -80,6 +94,7 @@ done
 for i in $(find . -regex ".*/rv64u[imc]-u-[a-z0-9_]+" | grep -v "fence_i"); do
     $AOT64_VERSION1 $i
 done
+
 
 # Test CKB VM with riscv-compliance
 cd "$TOP/riscv-compliance"
